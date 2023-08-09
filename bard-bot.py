@@ -2,18 +2,19 @@ import discord
 import requests
 import json
 
-
 def get_project_data(user, project):
     url = "https://api.github.com/repos/{}/{}".format(user, project)
-    response = requests.get(
-        url, headers={"Authorization": "token YOUR_GITHUB_CLASSIC_TOKEN"})
+    headers = {
+        "Accept": "application/vnd.github+json",
+        "Authorization": "Bearer YOUR_GITHUB_TOKEN",
+        "X-GitHub-Api-Version": "2022-11-28",
+    }
+    response = requests.get(url, headers=headers)
     if response.status_code == 200:
         data = json.loads(response.content)
         return data
     else:
-        raise Exception(
-            "Error getting project data: {}".format(response.status_code))
-
+        raise Exception("Error getting project data: {}".format(response.status_code))
 
 def plot_project_data(data):
     """Plots the project data in a Discord embed."""
@@ -21,7 +22,6 @@ def plot_project_data(data):
     for key, value in data.items():
         embed.add_field(name=key, value=value)
     return embed
-
 
 def handle_project_command(client, message):
     """Handles the `/project` command."""
@@ -34,14 +34,14 @@ def handle_project_command(client, message):
     except Exception as e:
         client.send_message(message.channel, "Error: {}".format(e))
 
+# set all intents to be able to receive all messages
+intents = discord.Intents.all()
 
-client = discord.Client()
-
+client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
     print("Bot is ready!")
-
 
 @client.event
 async def on_message(message):
